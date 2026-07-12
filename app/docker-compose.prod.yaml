@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # 1. Your Custom Python Web Application
+  blog-app:
+    build:
+      context: .
+      dockerfile: Dockerfile # Uses your optimized multi-stage Dockerfile
+    ports:
+      - "80:5000" # Exposes the app on standard web port 80
+    environment:
+      - MONGO_URI=mongodb://mongodb-service:27017/ # Connects using the internal service name
+    depends_on:
+      - mongodb-service
+    restart: always
+
+  # 2. The Official MongoDB Database Engine
+  mongodb-service:
+    image: mongo:latest
+    ports:
+      - "27017:27017" # Keeps port open for local inspection tools
+    volumes:
+      - production-mongo-data:/data/db # Maps physical disk for data persistence
+    restart: always
+
+volumes:
+  production-mongo-data: # This mimics the Azure Persistent Volume Claim (PVC)

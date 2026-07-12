@@ -1,0 +1,21 @@
+{
+  "name": "Python Slim & MongoDB AKS Demo",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "features": {
+    // Injects standard terminal, shell helpers, and git into a slim image
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "username": "root"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python"
+      ]
+    }
+  },
+  "postCreateCommand": "pip3 install -r requirements.txt"
+}
