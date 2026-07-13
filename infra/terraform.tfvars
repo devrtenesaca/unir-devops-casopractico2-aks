@@ -1,5 +1,5 @@
 prefix           = "casopractico2"
-location         = "eastus"
+location         = "chilecentral"
 vnet_cdir        = "10.0.0.0/16"
 subnet_cdir      = "10.0.1.0/24"
 aks_service_cidr = "172.16.0.0/16"

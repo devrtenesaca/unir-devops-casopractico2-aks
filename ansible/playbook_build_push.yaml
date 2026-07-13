@@ -49,6 +49,8 @@
       command: >
         docker buildx build
         --platform linux/amd64
-        -t {{ acr_server }}/fifa-app:casopractico2
+        -t {{ acr_server }}/app:casopractico2
         --push
-        ../fifa-app
+        ../app
+
+    

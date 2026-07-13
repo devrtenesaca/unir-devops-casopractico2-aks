@@ -36,14 +36,13 @@ infra_destroy:
 	cd infra/$* &&\
 	terraform destroy -auto-approve
 
-
 #------------------------------------------
 #build and push docker image to ACR
 #------------------------------------------
 ansible_build_push_aks:
 	@echo "Building and pushing Docker image to ACR..."
-	cd $(ANSIBLE_DIR) &&\
-	ansible-playbook -i inventory playbook-built.yaml	
+	cd $(ANSIBLE_DIR) && \
+	ansible-playbook  playbook_build_push.yaml 	
 	
 #------------------------------------------
 #deploy with ansible
@@ -51,7 +50,7 @@ ansible_build_push_aks:
 ansible_deploy_aks:
 	@echo "Deploying with Ansible..."
 	cd $(ANSIBLE_DIR) &&\
-	ansible-playbook  playbook_deploy.yaml -i inventory.ini
+	ansible-playbook  playbook_deploy_aks.yaml
 
 
 deploy_caso2_aks:
@@ -60,7 +59,9 @@ deploy_caso2_aks:
 	$(MAKE) infra_fmt
 	$(MAKE) infra_validate
 	$(MAKE) infra_apply
-	$(MAKE) ansible_build_push_image
+	$(MAKE) ansible_build_push_aks
+	$(MAKE) playbook_deploy_aks
+
 
 
 

@@ -1,0 +1,78 @@
+---
+- name: Deploy App to AKS
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Obtener outputs de terraform
+      command: terraform output -json
+      args:
+        chdir: "../infra"
+      register: tf_outputs
+
+    - name: Set facts de AKS
+      set_fact:
+        # Extraemos el kube_config que Terraform marcó como sensitive
+        kubeconfig_raw: "{{ (tf_outputs.stdout | from_json).kube_config.value }}"
+        acr_server: "{{ (tf_outputs.stdout | from_json).acr_login_server.value }}"
+
+    - name: Guardar Kubeconfig en un archivo temporal
+      copy:
+        content: "{{ kubeconfig_raw }}"
+        dest: "./aks_config"
+        mode: '0600'
+
+    - name: Desplegar Manifiesto en AKS
+      kubernetes.core.k8s:
+        kubeconfig: "./aks_config"
+        state: present
+        src: "../app/aks-app-deployment.yaml"
+        namespace: default
+      register: k8s_deploy
+
+
+    - name: 2. Actualizar solo la imagen (Patch)
+      kubernetes.core.k8s:
+        kubeconfig: "./aks_config"
+        state: patched
+        kind: Deployment
+        name: python-app # Debe coincidir con el name en tu YAML
+        namespace: default
+        definition:
+          spec:
+            template:
+              spec:
+                containers:
+                  - name: blog-app # Debe coincidir con el name del container en tu YAML
+                    image: "{{ acr_server }}/app:casopractico2"
+              
+    
+    - name: Esperar a que Azure asigne la IP externa
+      kubernetes.core.k8s_info:
+        kubeconfig: "./aks_config"
+        kind: Service
+        name: python-app-service
+        namespace: default
+      register: svc_info
+      # Reintentar hasta que la sección de ingress tenga una IP
+      until: >
+        svc_info.resources is defined and
+        svc_info.resources | length > 0 and
+        svc_info.resources[0].status.loadBalancer.ingress is defined and
+        svc_info.resources[0].status.loadBalancer.ingress | length > 0
+      retries: 20  # Reintentar 20 veces
+      delay: 10    # Esperar 10 segundos entre intentos
+
+    - name: Extraer la IP pública
+      set_fact:
+        public_ip: "{{ svc_info.resources[0].status.loadBalancer.ingress[0].ip }}"
+
+    - name: Mostrar la URL final de la aplicación
+      debug:
+        msg: "¡Despliegue exitoso! Accede a la app en: http://{{ public_ip }}"
+
+    - name: Eliminar Kubeconfig temporal por seguridad
+      file:
+        path: "./aks_config"
+        state: absent
+

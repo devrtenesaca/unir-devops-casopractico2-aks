@@ -9,8 +9,8 @@ resource "azurerm_container_registry" "acr_registry" {
   name                = "casopractico2aks"
   resource_group_name = azurerm_resource_group.rg_aks.name
   location            = var.location
-  sku                 = "Standard"
-  admin_enabled       = false
+  sku                 = "Basic"
+  admin_enabled       = true
 }
 #red virtual para aks
 
