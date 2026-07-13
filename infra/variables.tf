@@ -20,7 +20,7 @@ variable "tags" {
 variable "vnet_cdir" {
   description = "CIDR block for the virtual network"
   type        = string
-  
+
 }
 variable "subnet_cdir" {
   description = "CIDR block for the subnet"
@@ -34,5 +34,5 @@ variable "aks_service_cidr" {
 variable "aks_services_dns" {
   description = "DNS service IP for AKS"
   type        = string
-  
+
 }
