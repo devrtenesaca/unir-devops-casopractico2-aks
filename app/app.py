@@ -19,10 +19,10 @@ HTML_TEMPLATE = """
 </head>
 <body>
     <h2>Leave a Comment (Python + AKS Demo)</h2>
-    <form method="POST" action="/add">
+    <form method="POST" action="add">
         <input type="text" name="username" placeholder="Your Name" required style="width:100%; margin-bottom:10px; padding:8px;"><br>
         <textarea name="text" placeholder="Write a comment..." required style="width:100%; height:80px; margin-bottom:10px; padding:8px;"></textarea><br>
-        <button type="submit" style="padding:10px 20px; cursor:pointer;">Submit Comment</button>
+        <button type="submit" style="padding:10px 20px; cursor:pointer;">Submit Comment V2</button>
     </form>
     <h2>Comments</h2>
     {% for c in comments %}
@@ -47,7 +47,7 @@ def add_comment():
     text = request.form.get('text')
     if username and text:
         comments_collection.insert_one({"username": username, "text": text})
-    return redirect('/')
+    return redirect('./')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
