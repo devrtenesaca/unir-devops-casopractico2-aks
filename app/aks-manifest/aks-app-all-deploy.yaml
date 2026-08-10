@@ -15,7 +15,7 @@ spec:
       containers:
       - name: blog-app
         # REPLACE THIS with your actual image path (e.g., youracr.azurecr.io/python-app:v1)
-        image: casopractico2aks.azurecr.io/app:casopractico2
+        image: casopractico2aks.azurecr.io/app:casopractico3
         ports:
         - containerPort: 5000
         env:
