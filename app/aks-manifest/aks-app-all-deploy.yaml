@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-app
+  template:
+    metadata:
+      labels:
+        app: python-app
+    spec:
+      containers:
+      - name: blog-app
+        # REPLACE THIS with your actual image path (e.g., youracr.azurecr.io/python-app:v1)
+        image: casopractico2aks.azurecr.io/app:casopractico2
+        ports:
+        - containerPort: 5000
+        env:
+        - name: MONGO_URI
+          value: "mongodb://mongo-db:27017/"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"
+        # Probes required by AKS Safeguards
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 10
+---
+# --- 4. PYTHON APP SERVICE (External) ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-app-service
+spec:
+  type: ClusterIP  # Internal service, not exposed outside the cluster
+  selector:
+    app: python-app
+  ports:
+    - protocol: TCP
+      port: 80      # The Port you type in the browser
+      targetPort: 5000  # The Port Flask is listening on
+
+---
+
+#--- 5. INGRESS RESOURCE ---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: appcaso2-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx  # <--- Este portero tiene la IP pública
+  rules:
+  - http:
+      paths:
+      - path: /case-app(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: python-app-service # DEBE coincidir con el nombre del Servicio arriba
+            port:
+              number: 80
